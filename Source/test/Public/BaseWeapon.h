@@ -47,9 +47,10 @@ public:
     bool bShowDebugTrace;
 
     // --- State ---
-    // 현재 공격 동작 수행 중인지 여부
+    // [Refactor] 기존 bIsAttacking -> bIsTraceEnabled
+    // 무기의 물리 트레이스가 활성화되었는지 여부 (공격 애니메이션의 특정 구간)
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-    bool bIsAttacking;
+    bool bIsTraceEnabled;
 
     // 한 번의 휘두르기에서 이미 타격된 액터 목록 (중복 데미지 방지)
     UPROPERTY()
@@ -66,11 +67,12 @@ private:
 public:
     // --- Interface for Animation Notifies ---
 
-    // 공격 시작 (Anim Notify State Begin 등에서 호출)
+    // 공격 판정 시작 (Anim Notify State Begin 등에서 호출)
+    // 캐릭터의 '공격 상태'와 별개로, 무기가 '데미지를 줄 수 있는 구간'을 의미합니다.
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void StartAttack();
 
-    // 공격 종료 (Anim Notify State End 등에서 호출)
+    // 공격 판정 종료 (Anim Notify State End 등에서 호출)
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void EndAttack();
 };

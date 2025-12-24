@@ -39,6 +39,9 @@ APlayerCharacter::APlayerCharacter()
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false;
+
+    // [Refactor] 초기화
+    bIsAttacking = false;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -98,6 +101,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
+
     // 입력값 가져오기 (Vector2D)
     FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -138,20 +142,36 @@ void APlayerCharacter::Attack(const FInputActionValue& Value)
         return;
     }
 
+    // [Refactor] 이미 공격 중이면 중복 실행 방지
+    if (bIsAttacking) return;
+
     // 2. 애니메이션 인스턴스 가져오기
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     if (!AnimInstance) return;
 
-    // 3. 이미 몽타주가 재생 중인지 확인 (난타 방지, 콤보 구현 시에는 로직 변경 필요)
-    if (!AnimInstance->Montage_IsPlaying(AttackMontage))
+    // 3. 몽타주 재생
+    AnimInstance->Montage_Play(AttackMontage);
+
+    // [Refactor] 상태 업데이트 및 종료 델리게이트 바인딩    
+    bIsAttacking = true;
+
+    FOnMontageEnded EndDelegate;
+    EndDelegate.BindUObject(this, &APlayerCharacter::OnAttackMontageEnded);
+    AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+
+    PLAYER_LOG(Log, TEXT("Attack Started (State Set to True)"));
+
+    // 참고: 여기서 Weapon->StartAttack()을 직접 호출하지 않습니다.
+    // BaseWeapon의 StartAttack은 몽타주 내부의 'Anim Notify'가 호출해줘야
+    // 애니메이션 동작과 데미지 타이밍이 정확하게 일치합니다.
+}
+
+void APlayerCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+    // [Refactor] 공격 종료 처리
+    if (Montage == AttackMontage)
     {
-        // 몽타주 재생
-        AnimInstance->Montage_Play(AttackMontage);
-
-        PLAYER_LOG(Log, TEXT("Playing Attack Montage"));
-
-        // 참고: 여기서 Weapon->StartAttack()을 직접 호출하지 않습니다.
-        // BaseWeapon의 StartAttack은 몽타주 내부의 'Anim Notify'가 호출해줘야
-        // 애니메이션 동작과 데미지 타이밍이 정확하게 일치합니다.
+        bIsAttacking = false;
+        PLAYER_LOG(Log, TEXT("Attack Ended (State Set to False)"));
     }
 }

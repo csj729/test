@@ -21,7 +21,9 @@ ABaseWeapon::ABaseWeapon()
     // 기본값 설정
     TraceChannel = ECC_Pawn; // 캐릭터를 감지하도록 설정
     bShowDebugTrace = false;
-    bIsAttacking = false;
+
+    // [Refactor] 초기화
+    bIsTraceEnabled = false;
 
     // 기본 스탯 초기화 (나중에 CSV/JSON에서 덮어씌워짐)
     WeaponStats.BaseDamage = 10.0f;
@@ -50,7 +52,8 @@ void ABaseWeapon::BeginPlay()
 
 void ABaseWeapon::StartAttack()
 {
-    bIsAttacking = true;
+    // [Refactor] 트레이스 활성화
+    bIsTraceEnabled = true;
     HitActors.Empty(); // 타격 목록 초기화
 
     // 공격 시작 시점의 위치로 갱신 (공격 안 할 때 텔레포트 등으로 위치가 튀는 것 방지)
@@ -62,13 +65,14 @@ void ABaseWeapon::StartAttack()
         }
     }
 
-    WEAPON_LOG(Log, TEXT("Attack Trace Started"));
+    WEAPON_LOG(Log, TEXT("Attack Trace Started (Trace Enabled)"));
 }
 
 void ABaseWeapon::EndAttack()
 {
-    bIsAttacking = false;
-    WEAPON_LOG(Log, TEXT("Attack Trace Ended"));
+    // [Refactor] 트레이스 비활성화
+    bIsTraceEnabled = false;
+    WEAPON_LOG(Log, TEXT("Attack Trace Ended (Trace Disabled)"));
 }
 
 void ABaseWeapon::Tick(float DeltaTime)
@@ -76,7 +80,7 @@ void ABaseWeapon::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     // 공격 중일 때만 물리 트레이스 및 데미지 판정 수행
-    if (bIsAttacking)
+    if (bIsTraceEnabled)
     {
         PerformWeaponTrace();
     }

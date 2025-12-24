@@ -57,10 +57,19 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
     UAnimMontage* AttackMontage;
 
+    // [Refactor] 캐릭터의 공격 상태
+    // 무기가 아닌 캐릭터가 이 상태를 관리합니다. (이동 제한, 중복 입력 방지 등)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsAttacking;
+
 protected:
     // --- Input Functions ---
     // Enhanced Input은 값을 FInputActionValue로 전달받습니다.
     void Move(const FInputActionValue& Value);
     void Look(const FInputActionValue& Value);
     void Attack(const FInputActionValue& Value);
+
+    // [Refactor] 몽타주 종료 시 호출될 델리게이트 함수
+    UFUNCTION()
+    void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };
