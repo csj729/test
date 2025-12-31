@@ -1,75 +1,67 @@
-// PlayerCharacter.h
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseCharacter.h"
-#include "InputActionValue.h" // [중요] Enhanced Input 값 구조체
+#include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
-// [Rule] 클래스 전용 로그 매크로 선언
+// 로그 카테고리 선언
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerChar, Log, All);
 
 UCLASS()
-class TEST_API APlayerCharacter : public ABaseCharacter
+class TEST_API APlayerCharacter : public ACharacter
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    APlayerCharacter();
+	APlayerCharacter();
+
+	// 상체(Player A)가 이 캐릭터의 상반신 회전값을 업데이트할 때 호출
+	void SetUpperBodyRotation(FRotator NewRotation);
+
+	// 상체(Player A)가 공격 버튼을 눌렀을 때 호출
+	// (블루프린트에서 로직을 짜기 위해 BlueprintImplementableEvent로 변경 추천)
+	UFUNCTION(BlueprintImplementableEvent, Category = "Coop")
+	void TriggerUpperBodyAttack();	
+
+	// 애니메이션 블루프린트에서 사용할 변수
+	UPROPERTY(BlueprintReadOnly, Category = "Coop|Animation")
+	FRotator UpperBodyAimRotation;
 
 protected:
-    virtual void BeginPlay() override;
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-    // [Rule] 단축 로그 매크로
-#define PLAYER_LOG(Verbosity, Format, ...) UE_LOG(LogPlayerChar, Verbosity, TEXT("%s: ") Format, *GetName(), ##__VA_ARGS__)
+	// 이동 (Player B 전용)
+	void Move(const FInputActionValue& Value);
+	// 시선 (Player B 전용 - 후방 카메라 회전)
+	void Look(const FInputActionValue& Value);
 
 public:
-    // --- Camera ---
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-    class USpringArmComponent* CameraBoom;
+	// --- Camera (Rear View) ---
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	class USpringArmComponent* RearCameraBoom;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-    class UCameraComponent* FollowCamera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	class UCameraComponent* RearCamera;
 
-    // --- Enhanced Input Assets ---
-    // 에디터에서 할당할 입력 매핑 컨텍스트
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-    class UInputMappingContext* DefaultMappingContext;
+	// --- Mount Point ---
+	// [중요] 기존 UpperBodyMountPoint 삭제 -> HeadMountPoint로 대체
+	// Player A(상반신) Pawn이 부착될 위치
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coop")
+	class USceneComponent* HeadMountPoint;
 
-    // 이동 액션 (IA_Move: Vector2D)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-    class UInputAction* MoveAction;
+	// --- Inputs (Player B) ---
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputMappingContext* DefaultMappingContext;
 
-    // 시선 처리 액션 (IA_Look: Vector2D)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-    class UInputAction* LookAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* MoveAction;
 
-    // 점프 액션 (IA_Jump: Bool)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-    class UInputAction* JumpAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* LookAction;
 
-    // 공격 액션 (IA_Attack: Bool)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-    class UInputAction* AttackAction;
-
-    // 공격 몽타주
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-    UAnimMontage* AttackMontage;
-
-    // [Refactor] 캐릭터의 공격 상태
-    // 무기가 아닌 캐릭터가 이 상태를 관리합니다. (이동 제한, 중복 입력 방지 등)
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-    bool bIsAttacking;
-
-protected:
-    // --- Input Functions ---
-    // Enhanced Input은 값을 FInputActionValue로 전달받습니다.
-    void Move(const FInputActionValue& Value);
-    void Look(const FInputActionValue& Value);
-    void Attack(const FInputActionValue& Value);
-
-    // [Refactor] 몽타주 종료 시 호출될 델리게이트 함수
-    UFUNCTION()
-    void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	// 점프 액션
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* JumpAction;
 };
