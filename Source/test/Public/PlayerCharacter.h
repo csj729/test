@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseCharacter.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
@@ -9,7 +9,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerChar, Log, All);
 
 UCLASS()
-class TEST_API APlayerCharacter : public ACharacter
+class TEST_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -61,7 +61,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* LookAction;
 
-	// 점프 액션
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* JumpAction;
 };

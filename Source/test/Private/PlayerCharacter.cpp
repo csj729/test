@@ -3,11 +3,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SceneComponent.h"
-// [수정] 이 헤더가 있어야 GetCapsuleComponent()를 USceneComponent*로 인식합니다!
-#include "Components/CapsuleComponent.h" 
-
+#include "Components/CapsuleComponent.h"	
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "DrawDebugHelpers.h"
 
 DEFINE_LOG_CATEGORY(LogPlayerChar);
 

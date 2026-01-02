@@ -27,6 +27,7 @@ protected:
 
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
+	void Interact(const FInputActionValue& Value);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -44,6 +45,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	class UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	class UInputAction* InteractAction;
+
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float InteractionDistance = 300.0f;
+
 	// 공격 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* AttackMontage;
@@ -60,6 +67,7 @@ private:
 	float LastBodyYaw;
 
 	// 몽타주 종료 시 호출될 델리게이트 함수
-	UFUNCTION()
-	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	//UFUNCTION()
+	//void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 };
